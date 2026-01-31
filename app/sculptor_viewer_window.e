@@ -28,7 +28,7 @@ feature -- Access
 	widget: SV_WIDGET
 			-- Main widget for window.
 		do
-			Result := browser_widget.ev_widget
+			Result := browser_widget
 		end
 
 feature {NONE} -- Implementation
