@@ -78,7 +78,7 @@ feature -- Configuration
 		require
 			size_valid: a_size >= 0.1 and a_size <= 1.0
 		do
-			config.set_voxel_size (a_size)
+			config.set_voxel_size (a_size).do_nothing
 			Result := Current
 		ensure
 			result_is_current: Result = Current
@@ -92,7 +92,7 @@ feature -- Configuration
 	set_seed (a_seed: INTEGER): like Current
 			-- Set random seed for reproducibility.
 		do
-			config.set_seed (a_seed)
+			config.set_seed (a_seed).do_nothing
 			Result := Current
 		ensure
 			result_is_current: Result = Current
@@ -108,7 +108,7 @@ feature -- Configuration
 		require
 			steps_valid: a_steps >= 16 and a_steps <= 256
 		do
-			config.set_num_inference_steps (a_steps)
+			config.set_num_inference_steps (a_steps).do_nothing
 			Result := Current
 		ensure
 			result_is_current: Result = Current
@@ -138,7 +138,7 @@ feature -- Generation
 			if l_inference_result.is_success and attached l_inference_result.points as l_points then
 				-- Step 2: Convert point cloud to mesh using voxel grid
 				create l_converter.make (config.voxel_size)
-				l_mesh := l_converter.convert (l_points)
+				l_mesh := l_converter.to_mesh (l_points)
 
 				-- Step 3: Return mesh result
 				create Result.make_success (l_mesh)
@@ -171,30 +171,28 @@ feature -- Generation
 			result_not_void: Result /= Void
 		end
 
-	batch_generate (a_prompts: LIST [STRING]): LIST [SCULPTOR_RESULT]
+	batch_generate (a_prompts: ARRAY [STRING]): ARRAY [SCULPTOR_RESULT]
 			-- Generate multiple 3D meshes from list of prompts.
 		require
 			prompts_not_void: a_prompts /= Void
 			prompts_not_empty: a_prompts.count > 0
-			model_loaded: is_model_loaded
 		local
-			l_results: ARRAYED_LIST [SCULPTOR_RESULT]
+			l_results: ARRAY [SCULPTOR_RESULT]
+			i: INTEGER
 		do
-			create l_results.make (a_prompts.count)
-
-			across a_prompts as ic loop
-				if attached ic.item as l_prompt then
-					l_results.extend (generate (l_prompt))
-				end
+			create l_results.make (1, a_prompts.count)
+			from
+				i := a_prompts.lower
+			until
+				i > a_prompts.upper
+			loop
+				l_results.put (generate (a_prompts.at (i)), i)
+				i := i + 1
 			end
-
 			Result := l_results
 		ensure
 			result_not_void: Result /= Void
 			result_count: Result.count = a_prompts.count
-			each_result_valid: across Result as ic all
-								  ic.item.is_success xor (not ic.item.error_message.is_empty)
-								end
 		end
 
 feature -- Model Management

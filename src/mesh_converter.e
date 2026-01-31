@@ -27,7 +27,7 @@ feature -- Access
 
 feature -- Conversion
 
-	convert (a_points: POINT_CLOUD): SCULPTOR_MESH
+	to_mesh (a_points: POINT_CLOUD): SCULPTOR_MESH
 			-- Convert point cloud to mesh.
 		require
 			points_not_void: a_points /= Void
@@ -134,7 +134,7 @@ feature -- Conversion
 								 Result.vertex_count <= (a_points.point_count * 8)
 		end
 
-	convert_with_smoothing (a_points: POINT_CLOUD; a_smooth_iterations: INTEGER): SCULPTOR_MESH
+	to_mesh_with_smoothing (a_points: POINT_CLOUD; a_smooth_iterations: INTEGER): SCULPTOR_MESH
 			-- Convert with Laplacian smoothing.
 		require
 			points_not_void: a_points /= Void
@@ -142,7 +142,7 @@ feature -- Conversion
 			iterations_valid: a_smooth_iterations >= 0 and a_smooth_iterations <= 10
 		do
 			-- First convert to mesh
-			Result := convert (a_points)
+			Result := to_mesh (a_points)
 
 			-- If smoothing requested, apply Laplacian smoothing
 			-- (For Phase 4, simplified approach: just return converted mesh)

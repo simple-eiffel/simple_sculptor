@@ -123,9 +123,9 @@ feature -- Inference
 				l_idx >= 256
 			loop
 				-- Simple pseudo-random generation using seed
-				l_points.extend ((l_idx * 0.1) mod 1.0 - 0.5)
-				l_points.extend ((l_idx * 0.3) mod 1.0 - 0.5)
-				l_points.extend ((l_idx * 0.7) mod 1.0 - 0.5)
+				l_points.extend (((l_idx \\ 10).to_real * 0.1) - 0.5)
+				l_points.extend (((l_idx \\ 10).to_real * 0.3) - 0.5)
+				l_points.extend (((l_idx \\ 10).to_real * 0.7) - 0.5)
 				l_idx := l_idx + 1
 			end
 

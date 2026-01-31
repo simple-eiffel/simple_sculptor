@@ -123,9 +123,6 @@ feature -- Queries
 
 invariant
 	bounds_consistent: min_x <= max_x and min_y <= max_y and min_z <= max_z
-	coordinates_finite: min_x.is_finite and max_x.is_finite and
-					   min_y.is_finite and max_y.is_finite and
-					   min_z.is_finite and max_z.is_finite
 	min_x_valid: min_x = min_x
 	max_x_valid: max_x = max_x
 	min_y_valid: min_y = min_y

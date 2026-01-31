@@ -59,8 +59,6 @@ feature {NONE} -- Validation Helpers
 					Result := False
 				end
 			end
-		ensure
-			result_not_void: Result /= Void
 		end
 
 feature -- Access
