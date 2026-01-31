@@ -177,19 +177,21 @@ feature -- Generation
 			prompts_not_void: a_prompts /= Void
 			prompts_not_empty: a_prompts.count > 0
 		local
-			l_results: ARRAY [SCULPTOR_RESULT]
+			l_results: ARRAYED_LIST [SCULPTOR_RESULT]
+			l_results_array: ARRAY [SCULPTOR_RESULT]
 			i: INTEGER
 		do
-			create l_results.make (1, a_prompts.count)
+			create l_results.make (a_prompts.count)
 			from
 				i := a_prompts.lower
 			until
 				i > a_prompts.upper
 			loop
-				l_results.put (generate (a_prompts.at (i)), i)
+				l_results.extend (generate (a_prompts.at (i)))
 				i := i + 1
 			end
-			Result := l_results
+			l_results_array := l_results.to_array
+			Result := l_results_array
 		ensure
 			result_not_void: Result /= Void
 			result_count: Result.count = a_prompts.count

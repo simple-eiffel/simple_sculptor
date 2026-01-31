@@ -10,7 +10,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_points: ARRAY [REAL_32])
+	make (a_points: ARRAY [REAL_64])
 			-- Create point cloud from flat array (xyz triplets).
 		require
 			points_not_void: a_points /= Void
@@ -23,7 +23,7 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	points: ARRAY [REAL_32]
+	points: ARRAY [REAL_64]
 			-- Point data as flat array [x0, y0, z0, x1, y1, z1, ...].
 
 	point_count: INTEGER
@@ -36,7 +36,7 @@ feature -- Access
 
 feature -- Model Queries
 
-	points_model: ARRAY [REAL_32]
+	points_model: ARRAY [REAL_64]
 			-- Mathematical model of points (for postcondition verification).
 		local
 			l_idx: INTEGER
@@ -75,8 +75,8 @@ feature -- Queries
 	bounding_box: BOUNDING_BOX_3D
 			-- Axis-aligned bounding box of all points.
 		local
-			l_min_x, l_min_y, l_min_z: REAL_32
-			l_max_x, l_max_y, l_max_z: REAL_32
+			l_min_x, l_min_y, l_min_z: REAL_64
+			l_max_x, l_max_y, l_max_z: REAL_64
 			l_idx: INTEGER
 		do
 			if is_empty then

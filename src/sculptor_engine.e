@@ -108,8 +108,8 @@ feature -- Inference
 			prompt_not_void: a_prompt /= Void
 			prompt_not_empty: not a_prompt.is_empty
 		local
-			l_points: ARRAYED_LIST [REAL_32]
-			l_points_array: ARRAY [REAL_32]
+			l_points: ARRAYED_LIST [REAL_64]
+			l_points_array: ARRAY [REAL_64]
 			l_point_cloud: POINT_CLOUD
 			l_idx: INTEGER
 		do

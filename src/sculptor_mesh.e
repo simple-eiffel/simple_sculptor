@@ -22,7 +22,7 @@ feature {NONE} -- Initialization
 			empty: vertex_count = 0 and face_count = 0
 		end
 
-	make (a_vertices: ARRAY [REAL_32]; a_faces: ARRAY [INTEGER])
+	make (a_vertices: ARRAY [REAL_64]; a_faces: ARRAY [INTEGER])
 			-- Create mesh from vertices and faces.
 		require
 			vertices_not_void: a_vertices /= Void
@@ -42,7 +42,7 @@ feature {NONE} -- Initialization
 
 feature {NONE} -- Implementation
 
-	vertices: ARRAY [REAL_32]
+	vertices: ARRAY [REAL_64]
 			-- Vertex coordinates as flat array [x0, y0, z0, ...].
 
 	faces: ARRAY [INTEGER]
@@ -72,8 +72,8 @@ feature -- Access
 	bounding_box: BOUNDING_BOX_3D
 			-- Axis-aligned bounding box.
 		local
-			l_min_x, l_min_y, l_min_z: REAL_32
-			l_max_x, l_max_y, l_max_z: REAL_32
+			l_min_x, l_min_y, l_min_z: REAL_64
+			l_max_x, l_max_y, l_max_z: REAL_64
 			l_idx: INTEGER
 		do
 			if vertex_count = 0 then
@@ -123,7 +123,7 @@ feature -- Access
 
 feature -- Model Queries
 
-	vertices_model: ARRAY [REAL_32]
+	vertices_model: ARRAY [REAL_64]
 			-- Mathematical model of vertex coordinates.
 		do
 			Result := vertices

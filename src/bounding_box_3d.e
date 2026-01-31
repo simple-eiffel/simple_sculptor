@@ -10,7 +10,7 @@ create
 
 feature {NONE} -- Initialization
 
-	make (a_min_x, a_min_y, a_min_z, a_max_x, a_max_y, a_max_z: REAL_32)
+	make (a_min_x, a_min_y, a_min_z, a_max_x, a_max_y, a_max_z: REAL_64)
 			-- Create bounding box with min and max coordinates.
 		require
 			min_max_x: a_min_x <= a_max_x
@@ -47,27 +47,27 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	min_x: REAL_32
+	min_x: REAL_64
 			-- Minimum x coordinate.
 
-	min_y: REAL_32
+	min_y: REAL_64
 			-- Minimum y coordinate.
 
-	min_z: REAL_32
+	min_z: REAL_64
 			-- Minimum z coordinate.
 
-	max_x: REAL_32
+	max_x: REAL_64
 			-- Maximum x coordinate.
 
-	max_y: REAL_32
+	max_y: REAL_64
 			-- Maximum y coordinate.
 
-	max_z: REAL_32
+	max_z: REAL_64
 			-- Maximum z coordinate.
 
 feature -- Queries
 
-	width: REAL_32
+	width: REAL_64
 			-- Extent along x-axis.
 		do
 			Result := max_x - min_x
@@ -75,7 +75,7 @@ feature -- Queries
 			result_non_negative: Result >= 0.0
 		end
 
-	height: REAL_32
+	height: REAL_64
 			-- Extent along y-axis.
 		do
 			Result := max_y - min_y
@@ -83,7 +83,7 @@ feature -- Queries
 			result_non_negative: Result >= 0.0
 		end
 
-	depth: REAL_32
+	depth: REAL_64
 			-- Extent along z-axis.
 		do
 			Result := max_z - min_z
@@ -91,7 +91,7 @@ feature -- Queries
 			result_non_negative: Result >= 0.0
 		end
 
-	volume: REAL_32
+	volume: REAL_64
 			-- Volume of bounding box.
 		do
 			Result := width * height * depth
