@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<system xmlns="http://www.eiffel.com/developers/xml/configuration/22" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.eiffel.com/developers/xml/configuration/22 http://www.eiffel.com/developers/xml/configuration/22/configuration.xsd" name="simple_sculptor" uuid="B02C5B16-B02C-5B16-B02C-5B16B02C5B16" library_target="simple_sculptor">
+	<description>simple_sculptor: Text-to-3D generation library using ONNX Runtime and procedural geometry</description>
+	<target name="simple_sculptor">
+		<root all_classes="true"/>
+		<option warning="error" full_class_checking="true" is_obsolete_routine_type="true" void_safety="all">
+			<assertions precondition="true" postcondition="true" invariant="true"/>
+		</option>
+		<capability>
+			<concurrency support="scoop"/>
+			<void_safety support="all"/>
+		</capability>
+		<!-- Required Libraries (simple_* first policy) -->
+		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
+		<library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/>
+		<!-- Source Files -->
+		<cluster name="src" location="src/" recursive="true"/>
+	</target>
+	<target name="simple_sculptor_tests" extends="simple_sculptor">
+		<root class="TEST_APP" feature="make"/>
+		<option warning="error"/>
+		<library name="simple_testing" location="$SIMPLE_EIFFEL/simple_testing/simple_testing.ecf"/>
+		<library name="eqa_testing" location="$ISE_LIBRARY/library/testing/testing.ecf"/>
+		<cluster name="testing" location="testing/" recursive="true"/>
+	</target>
+</system>

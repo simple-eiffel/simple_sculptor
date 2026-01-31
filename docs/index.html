@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - Text-to-3D Generation Library</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <span style="font-size: 3rem;">🗿</span>
+        </div>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Text-to-3D generation using Point-E ONNX inference and procedural geometry</p>
+        <div class="badges">
+            <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="MIT License">
+            <img src="https://img.shields.io/badge/Eiffel-25.02-purple.svg" alt="Eiffel 25.02">
+            <img src="https://img.shields.io/badge/DBC-Contracts-green.svg" alt="Design by Contract">
+        </div>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="quick.html">QUICK API</a></li>
+            <li><a href="user-guide.html">User Guide</a></li>
+            <li><a href="api-reference.html">API Reference</a></li>
+            <li><a href="architecture.html">Architecture</a></li>
+            <li><a href="cookbook.html">Examples</a></li>
+            <li><a href="https://github.com/simple-eiffel/simple_sculptor">GitHub</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>
+                <strong>simple_sculptor</strong> is a production-ready text-to-3D generation library for Eiffel.
+                It leverages Point-E ONNX inference to convert text prompts into 3D point clouds,
+                then procedurally converts them to solid meshes via voxel-based geometry.
+            </p>
+            <p>
+                Part of the <a href="https://github.com/simple-eiffel">Simple Eiffel</a> ecosystem.
+            </p>
+        </section>
+
+        <section id="features">
+            <h2>Features</h2>
+            <ul>
+                <li>Text-to-3D generation via Point-E ONNX model</li>
+                <li>Multi-device support (CPU, CUDA, TensorRT)</li>
+                <li>Efficient point cloud processing</li>
+                <li>Voxel-based mesh conversion</li>
+                <li>Configurable inference parameters</li>
+                <li>Design by Contract throughout</li>
+                <li>SCOOP-compatible concurrency support</li>
+                <li>Multi-format export (GLB, OBJ, STL)</li>
+            </ul>
+        </section>
+
+        <section id="status">
+            <h2>Status</h2>
+            <p><strong>v1.0.0 - Production Ready</strong></p>
+            <ul>
+                <li>47 tests passing (100% pass rate)</li>
+                <li>Design by Contract throughout all 14 classes</li>
+                <li>Void-safe (void_safety="all")</li>
+                <li>SCOOP-compatible concurrency</li>
+                <li>Zero compilation warnings</li>
+            </ul>
+        </section>
+
+        <section id="quick-example">
+            <h2>Quick Example</h2>
+            <p>Generate a 3D mesh from a text prompt:</p>
+            <pre><code>local
+    l_sculptor: SIMPLE_SCULPTOR
+    l_result: SCULPTOR_RESULT
+do
+    create l_sculptor.make
+    l_sculptor.set_device ("CUDA")
+        .set_voxel_size (0.5)
+        .set_num_inference_steps (64)
+    l_sculptor.set_model_path ("point-e.onnx")
+    l_sculptor.load_model
+    l_result := l_sculptor.generate ("a red cube")
+    if l_result.is_success then
+        -- Process mesh
+    end
+end</code></pre>
+            <p>For complete documentation, see the <a href="user-guide.html">User Guide</a>.</p>
+        </section>
+
+        <section id="installation">
+            <h2>Installation</h2>
+            <p>Add to your ECF configuration file:</p>
+            <pre><code>&lt;library name="simple_sculptor"
+          location="$SIMPLE_EIFFEL/simple_sculptor/simple_sculptor.ecf"/&gt;</code></pre>
+        </section>
+
+        <section id="documentation">
+            <h2>Documentation</h2>
+            <ul>
+                <li><a href="quick.html">Quick API Reference</a> - Fast lookup of key classes</li>
+                <li><a href="user-guide.html">User Guide</a> - Detailed walkthrough and best practices</li>
+                <li><a href="api-reference.html">API Reference</a> - Complete class and feature documentation</li>
+                <li><a href="architecture.html">Architecture</a> - Design decisions and component overview</li>
+                <li><a href="cookbook.html">Examples</a> - Real-world usage patterns</li>
+            </ul>
+        </section>
+
+        <section id="key-classes">
+            <h2>Key Classes</h2>
+            <ul>
+                <li><code>SIMPLE_SCULPTOR</code> - Main facade for text-to-3D generation</li>
+                <li><code>SCULPTOR_ENGINE</code> - ONNX inference engine</li>
+                <li><code>POINT_CLOUD</code> - 3D point cloud representation</li>
+                <li><code>MESH_CONVERTER</code> - Voxel-based point-to-mesh conversion</li>
+                <li><code>SCULPTOR_MESH</code> - Solid 3D mesh with vertices and faces</li>
+                <li><code>SCULPTOR_RESULT</code> - XOR success/error result pattern</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Simple Eiffel Contributors. MIT License.</p>
+            <p><a href="https://github.com/simple-eiffel/simple_sculptor">GitHub Repository</a></p>
+        </footer>
+    </main>
+</body>
+</html>

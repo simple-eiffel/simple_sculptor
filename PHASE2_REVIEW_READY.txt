@@ -1,0 +1,291 @@
+PHASE 2: ADVERSARIAL CONTRACT REVIEW - READY TO BEGIN
+=======================================================
+
+Project: simple_sculptor
+Date: 2026-01-31
+Status: ✓ READY FOR REVIEW
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT IS PHASE 2?
+================
+
+Phase 2 reviews all 120+ contracts (14 classes with pre/post/invariants) using
+a progressive chain of 4 different AIs:
+
+  1. Ollama  - Finds obvious issues
+  2. Claude  - Analyzes semantics and MML
+  3. Grok    - Tests edge cases and adversarial scenarios
+  4. Gemini  - Synthesizes findings and recommends proceed/fix/reject
+
+Each AI considers previous findings, building stronger analysis at each step.
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT YOU NEED TO DO
+===================
+
+This is a MANUAL REVIEW CHAIN. You will:
+
+1. Copy .eiffel-workflow/prompts/phase2-ollama-review.md
+2. Paste to Ollama → get response
+3. Save response to .eiffel-workflow/evidence/phase2-ollama-response.md
+4. Edit prompts/phase2-claude-review.md with Ollama response
+5. Paste to Claude (new session) → get response
+6. Save response to .eiffel-workflow/evidence/phase2-claude-response.md
+7. Repeat for Grok with Ollama + Claude responses
+8. Repeat for Gemini with all three responses
+9. Return here and say "reviews complete"
+
+Total time: ~30-40 minutes (5-10 min per AI + minor editing)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+READY FILES
+===========
+
+✓ Implementation Approach
+  File: .eiffel-workflow/approach.md
+  Content: Phase 4 implementation strategy (14 classes, layer-by-layer)
+  Submitted with: All review prompts
+
+✓ Ollama Review Prompt (READY TO SUBMIT NOW)
+  File: .eiffel-workflow/prompts/phase2-ollama-review.md
+  Size: 800+ lines
+  Contains: All 14 classes, all 120+ contracts
+  Status: Fully pre-populated - copy and paste directly to Ollama
+
+✓ Claude Review Prompt (NEEDS OLLAMA RESPONSE)
+  File: .eiffel-workflow/prompts/phase2-claude-review.md
+  Needs: Paste Ollama's response into "Ollama's Review" section
+  Focus: MML, semantics, old-state reasoning, void safety
+
+✓ Grok Review Prompt (NEEDS OLLAMA + CLAUDE RESPONSES)
+  File: .eiffel-workflow/prompts/phase2-grok-review.md
+  Needs: Paste Ollama + Claude responses into appropriate sections
+  Focus: Edge cases, boundary conditions, adversarial scenarios
+  Pre-identified: Several candidate critical issues for Grok to verify
+
+✓ Gemini Review Prompt (NEEDS ALL 3 PREVIOUS RESPONSES)
+  File: .eiffel-workflow/prompts/phase2-gemini-review.md
+  Needs: Paste Ollama + Claude + Grok responses
+  Focus: Final synthesis, risk assessment, recommendation
+  Output: APPROVED / APPROVED WITH FIXES / REJECTED
+
+✓ Evidence Tracking
+  File: .eiffel-workflow/evidence/phase2-chain.txt
+  Purpose: Tracks which reviews are complete
+
+✓ Phase 2 Instructions
+  File: .eiffel-workflow/PHASE2_INSTRUCTIONS.md
+  Purpose: Detailed step-by-step workflow guide
+
+═══════════════════════════════════════════════════════════════════════════════
+
+EXPECTED FINDINGS
+=================
+
+Based on skeleton contracts created in Phase 1, reviews will likely find:
+
+CRITICAL ISSUES (contract bugs - must fix):
+  ✗ NaN/Inf coordinates not validated in geometry classes
+  ✗ Face indices not validated (may reference non-existent vertices)
+  ✗ Empty error messages may violate XOR invariant
+  ✗ File I/O errors not handled (ONNX loading, export to disk)
+
+HIGH ISSUES (contract gaps - should fix):
+  ✗ Frame conditions missing (what config stays unchanged after set_voxel_size?)
+  ✗ MML model queries missing for POINT_CLOUD collections
+  ✗ Weak preconditions on file paths (existence not verified)
+  ✗ Detachable model_path usage
+
+MEDIUM ISSUES (nice to have):
+  ✗ More detailed postcondition verification
+  ✗ Edge case documentation in contracts
+  ✗ Clearer error semantics
+
+LOW ISSUES (future improvements):
+  ✗ Performance hints
+  ✗ Alternative postcondition wording
+  ✗ Test coverage suggestions
+
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT HAPPENS AFTER REVIEWS
+===========================
+
+Once Gemini submits final verdict:
+
+IF APPROVED ✓
+  → Proceed to Phase 3 (Task Decomposition)
+  → No contract changes needed
+  → Ready for Phase 4 implementation
+
+IF APPROVED WITH FIXES ⚠️
+  → Gemini provides specific change list
+  → I apply fixes to contracts
+  → Possibly resubmit for critical issues
+  → Then proceed to Phase 3
+
+IF REJECTED ✗
+  → Contract redesign needed
+  → Back to Phase 1
+  → Very unlikely at this stage
+
+═══════════════════════════════════════════════════════════════════════════════
+
+PHASE 2 TIMELINE
+================
+
+Step 1: Ollama          ~5-10 min (find basic issues)
+Step 2: Claude          ~5-10 min (semantic analysis)
+Step 3: Grok            ~5-10 min (edge cases)
+Step 4: Gemini          ~5-10 min (final verdict)
+Step 5: Synthesis       ~2-3 min (generate synopsis)
+───────────────────────────────────
+TOTAL                   ~30-45 min
+
+═══════════════════════════════════════════════════════════════════════════════
+
+QUICK START
+===========
+
+1. Open this file in an editor:
+   .eiffel-workflow/prompts/phase2-ollama-review.md
+
+2. Copy everything (all ~800 lines)
+
+3. Paste to Ollama and wait for response
+
+4. Copy Ollama's response and save to:
+   .eiffel-workflow/evidence/phase2-ollama-response.md
+
+5. Return to Claude Code and say "reviews complete" when all 4 AIs are done
+
+═══════════════════════════════════════════════════════════════════════════════
+
+CONTRACTS BEING REVIEWED
+=========================
+
+14 classes with 120+ assertions:
+
+FACADE:
+  • SIMPLE_SCULPTOR (10 features)
+
+CORE LOGIC:
+  • SCULPTOR_ENGINE (ONNX inference)
+  • SCULPTOR_CONFIG (builder pattern)
+  • SCULPTOR_RESULT (success/failure)
+
+DATA STRUCTURES:
+  • POINT_CLOUD (3D sparse points)
+  • SCULPTOR_POINT_3D (coordinate)
+  • SCULPTOR_VECTOR_3D (direction)
+  • BOUNDING_BOX_3D (spatial bounds)
+
+PROCESSING:
+  • MESH_CONVERTER (voxelization)
+  • SCULPTOR_MESH (solid geometry)
+  • SCULPTOR_EXPORTER (format export)
+
+SUPPORTING:
+  • TEXT_PROMPT (input)
+  • MESH_VALIDATION_REPORT (quality)
+  • SCULPTOR_INFERENCE_RESULT (ONNX output)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+KEY METRICS
+===========
+
+Preconditions:    35+ (input validation)
+Postconditions:   50+ (output specification)
+Invariants:       14  (class consistency)
+Total Contracts:  99+ (frozen for Phase 4)
+
+Lines of Contract Code: 1,300+
+Lines of Test Code:     477
+Total Phase 1 Code:     1,777 lines
+
+═══════════════════════════════════════════════════════════════════════════════
+
+SUCCESS CRITERIA
+================
+
+Phase 2 is COMPLETE when:
+
+✓ All 4 AI reviews submitted
+✓ All responses saved to evidence/ directory
+✓ phase2-gemini-response.md contains Gemini's verdict
+✓ Verdict is APPROVED or APPROVED WITH FIXES
+✓ User explicitly approves moving to Phase 3
+
+═══════════════════════════════════════════════════════════════════════════════
+
+NEXT STEPS
+==========
+
+NOW:
+  1. Copy prompts/phase2-ollama-review.md
+  2. Submit to Ollama
+  3. Save response to evidence/phase2-ollama-response.md
+  4. Proceed with Claude, Grok, Gemini
+
+WHEN DONE (after all 4 reviews):
+  1. Say "reviews complete"
+  2. I generate synopsis.md
+  3. You review synopsis
+  4. Approve proceeding to Phase 3 (Task Decomposition)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+FILES REFERENCE
+===============
+
+PROMPTS (submit to AIs):
+  .eiffel-workflow/prompts/phase2-ollama-review.md    (ready now)
+  .eiffel-workflow/prompts/phase2-claude-review.md    (after Ollama)
+  .eiffel-workflow/prompts/phase2-grok-review.md      (after Claude)
+  .eiffel-workflow/prompts/phase2-gemini-review.md    (after Grok)
+
+EVIDENCE (save responses):
+  .eiffel-workflow/evidence/phase2-ollama-response.md
+  .eiffel-workflow/evidence/phase2-claude-response.md
+  .eiffel-workflow/evidence/phase2-grok-response.md
+  .eiffel-workflow/evidence/phase2-gemini-response.md
+  .eiffel-workflow/evidence/phase2-chain.txt
+
+DOCUMENTATION:
+  .eiffel-workflow/approach.md            (implementation strategy)
+  .eiffel-workflow/PHASE2_INSTRUCTIONS.md (detailed workflow)
+  PHASE2_REVIEW_READY.txt                 (this file)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+STATUS
+======
+
+✓ Phase 1: Contracts created (1,777 lines, 14 classes)
+✓ Phase 2: Review prompts created (ready for submission)
+⏳ Phase 2: Awaiting user to submit to AIs
+⏳ Phase 3: Task Decomposition (after Phase 2 approval)
+⏳ Phase 4: Implementation (after Phase 3)
+⏳ Phase 5: Verification/Testing (after Phase 4)
+⏳ Phase 6: Hardening (after Phase 5)
+⏳ Phase 7: Production Release (after Phase 6)
+
+═══════════════════════════════════════════════════════════════════════════════
+
+READY TO BEGIN?
+===============
+
+✓ All prompts generated
+✓ All contracts embedded
+✓ Implementation approach sketched
+✓ Evidence tracking set up
+
+Next action: Copy prompts/phase2-ollama-review.md and submit to Ollama
+
+When complete: Return and say "reviews complete"
+
+═══════════════════════════════════════════════════════════════════════════════

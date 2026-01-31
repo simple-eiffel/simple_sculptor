@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - API Reference</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Complete API Reference</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#main-classes">Main Classes</a></li>
+            <li><a href="#data-types">Data Types</a></li>
+            <li><a href="#result-types">Results</a></li>
+            <li><a href="quick.html">Quick</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="main-classes">
+            <h2>Main Classes</h2>
+
+            <h3>SIMPLE_SCULPTOR</h3>
+            <p><strong>Purpose:</strong> Facade for complete text-to-3D pipeline</p>
+            <pre><code><strong>Creation:</strong>
+make
+
+<strong>Configuration (Builder Pattern):</strong>
+set_device (device: STRING): like Current
+set_voxel_size (size: REAL [0.1..1.0]): like Current
+set_seed (seed: INTEGER): like Current
+set_num_inference_steps (steps: INTEGER [16..256]): like Current
+set_model_path (path: STRING): like Current
+
+<strong>Model Lifecycle:</strong>
+load_model
+unload_model
+is_model_loaded: BOOLEAN
+estimated_inference_time: REAL
+
+<strong>Generation:</strong>
+generate (prompt: STRING): SCULPTOR_RESULT
+batch_generate (prompts: LIST [STRING]): LIST [SCULPTOR_RESULT]
+generate_and_view (prompt: STRING): SCULPTOR_RESULT
+
+<strong>Invariants:</strong>
+engine_not_void
+config_not_void</code></pre>
+
+            <h3>SCULPTOR_ENGINE</h3>
+            <p><strong>Purpose:</strong> ONNX Point-E inference engine</p>
+            <pre><code><strong>Creation:</strong>
+make
+
+<strong>Configuration:</strong>
+set_device (device: STRING ["CPU", "CUDA", "TensorRT"])
+set_model_path (path: STRING)
+
+<strong>Model Management:</strong>
+load_model (requires: model_path_set, not_already_loaded)
+unload_model (requires: is_loaded)
+is_model_loaded: BOOLEAN
+
+<strong>Inference:</strong>
+execute (prompt: STRING; seed: INTEGER): SCULPTOR_INFERENCE_RESULT
+estimated_inference_time: REAL
+
+<strong>Status:</strong>
+device: STRING
+model_path: detachable STRING
+
+<strong>Invariants:</strong>
+device_valid (must be CPU, CUDA, or TensorRT)</code></pre>
+
+            <h3>SCULPTOR_CONFIG</h3>
+            <p><strong>Purpose:</strong> Configuration builder with fluent API</p>
+            <pre><code><strong>Creation:</strong>
+make (defaults: voxel_size=0.5, seed=42, steps=64)
+
+<strong>Configuration:</strong>
+set_voxel_size (size: REAL [0.1..1.0]): like Current
+set_seed (seed: INTEGER): like Current
+set_num_inference_steps (steps: INTEGER [16..256]): like Current
+
+<strong>Access:</strong>
+voxel_size: REAL
+seed: INTEGER
+num_inference_steps: INTEGER
+
+<strong>Invariants:</strong>
+voxel_size_valid (0.1 ≤ voxel_size ≤ 1.0)
+steps_valid (16 ≤ num_inference_steps ≤ 256)</code></pre>
+        </section>
+
+        <section id="data-types">
+            <h2>Data Types</h2>
+
+            <h3>POINT_CLOUD</h3>
+            <p><strong>Purpose:</strong> 3D point cloud from ONNX inference</p>
+            <pre><code><strong>Creation:</strong>
+make (points: ARRAY [REAL_32])  -- xyz triplets
+
+<strong>Access:</strong>
+points: ARRAY [REAL_32]
+point_count: INTEGER
+
+<strong>Queries:</strong>
+get_point (index: INTEGER): SCULPTOR_POINT_3D
+bounding_box: BOUNDING_BOX_3D
+is_empty: BOOLEAN
+points_model: ARRAY [REAL_32]  -- MML query
+
+<strong>Invariants:</strong>
+points_not_void
+count_valid (count % 3 = 0)</code></pre>
+
+            <h3>SCULPTOR_MESH</h3>
+            <p><strong>Purpose:</strong> Solid 3D mesh with vertices and triangular faces</p>
+            <pre><code><strong>Creation:</strong>
+make (vertices: ARRAY [REAL_32]; faces: ARRAY [INTEGER])
+make_empty
+
+<strong>Access:</strong>
+vertex_count: INTEGER
+face_count: INTEGER
+
+<strong>Queries:</strong>
+bounding_box: BOUNDING_BOX_3D
+validate: MESH_VALIDATION_REPORT
+vertices_model: ARRAY [REAL_32]  -- MML query
+faces_model: ARRAY [INTEGER]      -- MML query
+
+<strong>Export:</strong>
+to_glb (path: STRING)
+to_obj (path: STRING)
+to_stl (path: STRING)
+
+<strong>Invariants:</strong>
+vertex_count_non_negative
+face_count_non_negative</code></pre>
+
+            <h3>MESH_CONVERTER</h3>
+            <p><strong>Purpose:</strong> Voxel-based point cloud to mesh conversion</p>
+            <pre><code><strong>Creation:</strong>
+make (voxel_size: REAL [0.1..1.0])
+
+<strong>Conversion:</strong>
+convert (cloud: POINT_CLOUD): SCULPTOR_MESH
+convert_with_smoothing (cloud: POINT_CLOUD; iterations: INTEGER [0..10]): SCULPTOR_MESH
+
+<strong>Invariants:</strong>
+voxel_size_valid (0.1 ≤ voxel_size ≤ 1.0)</code></pre>
+        </section>
+
+        <section id="geometry">
+            <h2>Geometry Classes</h2>
+
+            <h3>SCULPTOR_POINT_3D</h3>
+            <p><strong>Purpose:</strong> 3D coordinate point</p>
+            <pre><code><strong>Creation:</strong>
+make (x, y, z: REAL_32)
+make_from_array (coords: ARRAY [REAL_32])
+
+<strong>Access:</strong>
+x, y, z: REAL_32
+
+<strong>Queries:</strong>
+distance_to (other: SCULPTOR_POINT_3D): REAL_32
+to_array: ARRAY [REAL_32]
+
+<strong>Invariants:</strong>
+coordinates_finite
+x_valid, y_valid, z_valid (NaN checks)</code></pre>
+
+            <h3>SCULPTOR_VECTOR_3D</h3>
+            <p><strong>Purpose:</strong> 3D direction vector</p>
+            <pre><code><strong>Creation:</strong>
+make (x, y, z: REAL_32)
+make_zero
+make_from_points (start, end: SCULPTOR_POINT_3D)
+
+<strong>Queries:</strong>
+magnitude: REAL_32
+dot_product (other: SCULPTOR_VECTOR_3D): REAL_32
+is_zero: BOOLEAN
+
+<strong>Transformations:</strong>
+scale (factor: REAL_32)
+normalize
+
+<strong>Invariants:</strong>
+components_finite
+x_valid, y_valid, z_valid (NaN checks)</code></pre>
+
+            <h3>BOUNDING_BOX_3D</h3>
+            <p><strong>Purpose:</strong> Axis-aligned 3D bounding volume</p>
+            <pre><code><strong>Creation:</strong>
+make (min_x, min_y, min_z, max_x, max_y, max_z: REAL_32)
+make_empty
+
+<strong>Access:</strong>
+min_x, min_y, min_z: REAL_32
+max_x, max_y, max_z: REAL_32
+
+<strong>Queries:</strong>
+width, height, depth: REAL_32
+volume: REAL_32
+contains_point (p: SCULPTOR_POINT_3D): BOOLEAN
+center: SCULPTOR_POINT_3D
+
+<strong>Invariants:</strong>
+bounds_consistent (min ≤ max)
+coordinates_finite
+All coordinates pass NaN checks</code></pre>
+        </section>
+
+        <section id="result-types">
+            <h2>Result Types</h2>
+
+            <h3>SCULPTOR_RESULT</h3>
+            <p><strong>Purpose:</strong> Success/error result (XOR pattern)</p>
+            <pre><code><strong>Creation:</strong>
+make_success (mesh: SCULPTOR_MESH)
+make_failure (message: STRING)
+
+<strong>Access:</strong>
+is_success: BOOLEAN
+mesh: detachable SCULPTOR_MESH  -- Valid if is_success
+error_message: STRING
+
+<strong>Queries:</strong>
+summary: STRING
+
+<strong>Invariants:</strong>
+success_xor_error (exactly one of success or error)
+success_has_mesh (if success, mesh /= Void)
+failure_implies_error (if failure, error non-empty)</code></pre>
+
+            <h3>SCULPTOR_INFERENCE_RESULT</h3>
+            <p><strong>Purpose:</strong> ONNX inference result (success/error XOR)</p>
+            <pre><code><strong>Creation:</strong>
+make_success (points: POINT_CLOUD)
+make_failure (message: STRING)
+
+<strong>Access:</strong>
+is_success: BOOLEAN
+points: detachable POINT_CLOUD  -- Valid if is_success
+error_message: STRING
+
+<strong>Invariants:</strong>
+success_xor_error (exactly one of success or error)
+success_has_points (if success, points /= Void)</code></pre>
+
+            <h3>MESH_VALIDATION_REPORT</h3>
+            <p><strong>Purpose:</strong> Mesh validation results</p>
+            <pre><code><strong>Creation:</strong>
+make
+
+<strong>Access:</strong>
+is_valid: BOOLEAN
+error_messages: LIST [STRING]
+
+<strong>Queries:</strong>
+error_count: INTEGER
+has_errors: BOOLEAN
+
+<strong>Modification:</strong>
+add_error (message: STRING)
+set_mesh_stats (vertex_count, face_count: INTEGER)
+
+<strong>Invariants:</strong>
+valid_xor_errors (is_valid XOR has_errors)</code></pre>
+        </section>
+
+        <footer>
+            <p>See <a href="quick.html">Quick API</a> for usage examples.</p>
+            <p><a href="index.html">← Back to Home</a></p>
+        </footer>
+    </main>
+</body>
+</html>

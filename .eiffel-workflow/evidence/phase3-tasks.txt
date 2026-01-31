@@ -1,0 +1,96 @@
+# Phase 3: Task Decomposition - Evidence
+
+Project: simple_sculptor
+Date: 2026-01-31
+Status: COMPLETE
+
+## Task Breakdown
+
+24 implementation tasks defined across 5 layers:
+
+LAYER 0 - Utility Classes (4 tasks):
+  Task 01: SCULPTOR_POINT_3D
+  Task 02: SCULPTOR_VECTOR_3D
+  Task 03: TEXT_PROMPT
+  Task 04: BOUNDING_BOX_3D
+
+LAYER 1 - Data Structures (3 tasks):
+  Task 05: POINT_CLOUD
+  Task 06: MESH_VALIDATION_REPORT
+  Task 07: SCULPTOR_CONFIG
+
+LAYER 2 - Core Logic (3 tasks):
+  Task 08: SCULPTOR_RESULT
+  Task 09: SCULPTOR_INFERENCE_RESULT
+  Task 10: MESH_CONVERTER
+
+LAYER 3 - System Integration (3 tasks):
+  Task 11: SCULPTOR_EXPORTER
+  Task 12: SCULPTOR_MESH
+  Task 13: SCULPTOR_ENGINE
+
+LAYER 4 - Public API (1 task):
+  Task 14: SIMPLE_SCULPTOR
+
+LAYER 5 - Integration & Testing (10 tasks):
+  Task 15: Configuration Pipeline
+  Task 16: Model Lifecycle
+  Task 17: Generation Pipeline
+  Task 18: Mesh Validation
+  Task 19: Error Handling
+  Task 20: Unit Test - SCULPTOR_POINT_3D
+  Task 21: Unit Test - POINT_CLOUD
+  Task 22: Unit Test - SCULPTOR_MESH
+  Task 23: Unit Test - MESH_CONVERTER
+  Task 24: Full Pipeline Integration Test
+
+## Acceptance Criteria
+
+All 24 tasks have explicit acceptance criteria derived from Phase 2 postconditions:
+- 180+ specific acceptance conditions
+- Each postcondition becomes a test
+- Each invariant becomes a validation
+- Frame conditions become side-effect tests
+
+## Dependencies
+
+Layer-based dependency model:
+- Layer 0: No dependencies (parallelizable)
+- Layer 1: Depends on Layer 0 (4 tasks parallel)
+- Layer 2: Depends on Layer 0-1 (3 tasks parallel)
+- Layer 3: Depends on Layer 0-2 (3 tasks parallel)
+- Layer 4: Depends on all layers (1 task sequential)
+- Layer 5: Depends on Layer 4 (10 tasks parallel)
+
+## Implementation Strategy
+
+Recommended execution:
+1. Implement Layers 0-1 in parallel (7 tasks) - 4-5 hours
+2. Implement Layers 2-3 in parallel (6 tasks) - 4-5 hours
+3. Implement Layer 4 (1 task) - 2-3 hours
+4. Implement Layer 5 in parallel (10 tasks) - 2-3 hours
+
+Total estimated effort: 12-16 hours
+Actual effort may vary based on ONNX integration complexity
+
+## Completion Criteria for Phase 4
+
+✓ All 24 tasks have acceptance criteria met
+✓ All 26 test methods passing
+✓ 100% test pass rate
+✓ Zero assertion failures on postconditions
+✓ Zero violations of invariants
+✓ TEST_APP test runner exits with success
+
+## Documentation
+
+Full task descriptions with acceptance criteria in:
+.eiffel-workflow/PHASE3_TASKS.md
+
+Each task includes:
+- Clear description
+- All acceptance criteria (from postconditions)
+- Implementation notes
+- Dependencies
+
+Status: READY FOR PHASE 4 IMPLEMENTATION

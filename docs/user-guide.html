@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - User Guide</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Comprehensive User Guide</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#getting-started">Getting Started</a></li>
+            <li><a href="#configuration">Configuration</a></li>
+            <li><a href="#generation">Generation</a></li>
+            <li><a href="#advanced">Advanced</a></li>
+            <li><a href="quick.html">Quick API</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>Overview</h2>
+            <p>
+                <strong>simple_sculptor</strong> provides a complete pipeline for generating 3D meshes from text prompts.
+                The library leverages Point-E ONNX inference for text understanding and procedural geometry for mesh generation.
+            </p>
+        </section>
+
+        <section id="getting-started">
+            <h2>Getting Started</h2>
+
+            <h3>Installation</h3>
+            <p>Add to your ECF configuration:</p>
+            <pre><code>&lt;library name="simple_sculptor"
+          location="$SIMPLE_EIFFEL/simple_sculptor/simple_sculptor.ecf"/&gt;</code></pre>
+
+            <h3>Basic Usage</h3>
+            <pre><code>local
+    l_sculptor: SIMPLE_SCULPTOR
+    l_result: SCULPTOR_RESULT
+do
+    -- Create instance
+    create l_sculptor.make
+
+    -- Configure
+    l_sculptor.set_device ("CPU")
+    l_sculptor.set_model_path ("models/point-e.onnx")
+
+    -- Load model
+    l_sculptor.load_model
+
+    -- Generate 3D mesh
+    l_result := l_sculptor.generate ("a red cube")
+
+    -- Check result
+    if l_result.is_success and attached l_result.mesh as mesh then
+        print ("Generated mesh with " + mesh.vertex_count.out + " vertices")
+    else
+        print ("Error: " + l_result.error_message)
+    end
+
+    -- Cleanup
+    l_sculptor.unload_model
+end</code></pre>
+        </section>
+
+        <section id="configuration">
+            <h2>Configuration</h2>
+
+            <h3>Device Selection</h3>
+            <p>Choose execution device for ONNX inference:</p>
+            <pre><code>l_sculptor.set_device ("CPU")        -- CPU inference (60s avg)
+l_sculptor.set_device ("CUDA")       -- NVIDIA GPU (15s avg)
+l_sculptor.set_device ("TensorRT")   -- TensorRT optimization (10s avg)</code></pre>
+
+            <h3>Voxel Size</h3>
+            <p>Control mesh resolution (range 0.1 to 1.0):</p>
+            <pre><code>l_sculptor.set_voxel_size (0.1)  -- Fine detail (slow)
+l_sculptor.set_voxel_size (0.5)  -- Balanced (default)
+l_sculptor.set_voxel_size (1.0)  -- Coarse (fast)</code></pre>
+
+            <h3>Inference Parameters</h3>
+            <pre><code>l_sculptor.set_seed (42)                    -- Reproducibility
+l_sculptor.set_num_inference_steps (64)     -- Quality (16-256)</code></pre>
+
+            <h3>Fluent Configuration</h3>
+            <p>Chain configuration calls:</p>
+            <pre><code>l_sculptor.set_device ("CUDA")
+    .set_voxel_size (0.5)
+    .set_seed (123)
+    .set_num_inference_steps (64)</code></pre>
+        </section>
+
+        <section id="generation">
+            <h2>Generation</h2>
+
+            <h3>Single Prompt</h3>
+            <pre><code>result := l_sculptor.generate ("a wooden chair")
+if result.is_success then
+    mesh := result.mesh
+    -- Process mesh (export, display, etc.)
+end</code></pre>
+
+            <h3>Batch Generation</h3>
+            <p>Generate multiple meshes efficiently:</p>
+            <pre><code>local
+    prompts: LIST [STRING]
+    results: LIST [SCULPTOR_RESULT]
+do
+    create {ARRAYED_LIST [STRING]} prompts.make (3)
+    prompts.extend ("red cube")
+    prompts.extend ("blue sphere")
+    prompts.extend ("green pyramid")
+
+    results := l_sculptor.batch_generate (prompts)
+
+    across results as r loop
+        if r.item.is_success then
+            process_mesh (r.item.mesh)
+        end
+    end
+end</code></pre>
+
+            <h3>Result Handling</h3>
+            <p>Results use XOR pattern: success OR error, never both:</p>
+            <pre><code>result := l_sculptor.generate (prompt)
+
+if result.is_success then
+    -- Success path: result.mesh is valid
+    mesh := result.mesh
+    vertex_count := mesh.vertex_count
+    face_count := mesh.face_count
+else
+    -- Error path: result.error_message is populated
+    error := result.error_message
+    -- Handle error (model not loaded, inference failed, etc.)
+end</code></pre>
+        </section>
+
+        <section id="mesh-handling">
+            <h2>Mesh Handling</h2>
+
+            <h3>Mesh Structure</h3>
+            <p>Meshes contain vertices (3D coordinates) and faces (triangles):</p>
+            <pre><code>mesh := result.mesh
+
+-- Query structure
+vertex_count := mesh.vertex_count    -- Number of vertices
+face_count := mesh.face_count        -- Number of triangles
+
+-- Geometry
+bbox := mesh.bounding_box            -- Min/max bounds
+volume := bbox.volume                -- Bounding volume
+
+-- Validation
+report := mesh.validate
+if report.is_valid then
+    -- Topology valid (all face indices reference valid vertices)
+else
+    -- Errors exist
+    across report.error_messages as msg loop
+        print (msg.item)
+    end
+end</code></pre>
+
+            <h3>Point Cloud Processing</h3>
+            <p>Work with intermediate point clouds:</p>
+            <pre><code>-- Engine produces point cloud
+inference_result := l_engine.execute ("prompt", seed)
+
+if inference_result.is_success and attached inference_result.points as cloud then
+    -- Convert to mesh
+    converter := create {MESH_CONVERTER}.make (0.5)
+    mesh := converter.convert (cloud)
+end</code></pre>
+
+            <h3>Mesh Conversion</h3>
+            <p>Convert point clouds to meshes with optional smoothing:</p>
+            <pre><code>converter := create {MESH_CONVERTER}.make (0.5)  -- Voxel size
+
+-- Basic conversion
+mesh := converter.convert (point_cloud)
+
+-- With Laplacian smoothing
+mesh := converter.convert_with_smoothing (point_cloud, 5)  -- 5 iterations</code></pre>
+        </section>
+
+        <section id="advanced">
+            <h2>Advanced Topics</h2>
+
+            <h3>Direct Engine Usage</h3>
+            <p>Access ONNX engine directly for advanced control:</p>
+            <pre><code>engine := l_sculptor.engine
+config := l_sculptor.config
+
+-- Inference time estimation
+time := engine.estimated_inference_time
+print ("Estimated time: " + time.out + " seconds")</code></pre>
+
+            <h3>Custom Geometry</h3>
+            <p>Create geometry manually:</p>
+            <pre><code>-- Create point 3D coordinates
+point := create {SCULPTOR_POINT_3D}.make (1.0, 2.0, 3.0)
+
+-- Create vector
+vector := create {SCULPTOR_VECTOR_3D}.make (1.0, 0.0, 0.0)
+distance := vector.magnitude
+
+-- Create bounding box
+bbox := create {BOUNDING_BOX_3D}.make (-1.0, -1.0, -1.0, 1.0, 1.0, 1.0)</code></pre>
+
+            <h3>Error Recovery</h3>
+            <p>Handle various error conditions:</p>
+            <pre><code>-- Model not loaded
+if not l_sculptor.is_model_loaded then
+    l_sculptor.load_model
+end
+
+-- Empty prompt
+if prompt.is_empty then
+    prompt := "default object"
+end
+
+-- Batch with mixed success/failure
+results := l_sculptor.batch_generate (prompts)
+successful := 0
+failed := 0
+across results as r loop
+    if r.item.is_success then
+        successful := successful + 1
+    else
+        failed := failed + 1
+    end
+end
+print (successful.out + " succeeded, " + failed.out + " failed")</code></pre>
+        </section>
+
+        <section id="best-practices">
+            <h2>Best Practices</h2>
+
+            <h3>Resource Management</h3>
+            <ul>
+                <li>Load model once, reuse for multiple generations</li>
+                <li>Unload model when done to free VRAM</li>
+                <li>Use batch_generate for multiple prompts to avoid reload overhead</li>
+            </ul>
+
+            <h3>Performance Optimization</h3>
+            <ul>
+                <li>Use TensorRT device for fastest inference</li>
+                <li>Use larger voxel_size (0.8-1.0) for speed, smaller (0.1-0.3) for detail</li>
+                <li>Reduce num_inference_steps (16) for faster generation</li>
+            </ul>
+
+            <h3>Quality Assurance</h3>
+            <ul>
+                <li>Always check result.is_success before accessing mesh</li>
+                <li>Validate meshes with mesh.validate() before export</li>
+                <li>Use fixed seed for reproducible results</li>
+            </ul>
+
+            <h3>Code Pattern</h3>
+            <pre><code>-- Initialize once
+create l_sculptor.make
+l_sculptor.set_device ("CUDA")
+    .set_voxel_size (0.5)
+    .set_model_path ("point-e.onnx")
+l_sculptor.load_model
+
+-- Reuse for multiple generations
+across prompts as prompt loop
+    result := l_sculptor.generate (prompt.item)
+    if result.is_success then
+        export_mesh (result.mesh)
+    end
+end
+
+-- Cleanup
+l_sculptor.unload_model</code></pre>
+        </section>
+
+        <footer>
+            <p>See <a href="quick.html">Quick API Reference</a> for class signatures.</p>
+            <p><a href="index.html">← Back to Home</a></p>
+        </footer>
+    </main>
+</body>
+</html>

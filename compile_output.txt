@@ -1,0 +1,20 @@
+[1;33m=== AUTO-RAW MODE (compiler flags detected) ===[0m
+[0;34mTIP: Use 'ec.sh test ...' instead of passing -finalize directly[0m
+[1;33m=== RAW MODE (passthrough) ===[0m
+[0;34mRunning:[0m ec.exe -batch -config simple_sculptor.ecf -target simple_sculptor_tests -c_compile
+Eiffel Compilation Manager
+Version 25.02.9.8732 - win64
+
+-------------------------------------------------------------------------------
+
+Warning code: VD81
+
+Non-total order on real numbers specified for the target 'simple_sculptor_tests' is now obsolete.
+Consider changing the setting to "True" and using features with the names starting from "ieee" of the classes REAL_32 and REAL_64 if needed.
+
+How to change the setting?
+	1. Open the project settings dialog: Project | Project Settings...
+	2. For every affected target, navigate to Target | Advanced.
+	3. In the section "Language" in the pane on the right, set the value of the setting "Total Order on REALs" to "True".
+
+-------------------------------------------------------------------------------

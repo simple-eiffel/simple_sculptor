@@ -1,0 +1,203 @@
+# Phase 2: Contract Review - Evidence Tracking
+
+Project: simple_sculptor
+Date Started: 2026-01-31
+Status: INITIATED (waiting for user to submit prompts to AIs)
+
+## Review Chain Structure
+
+This is a progressive AI review chain where each AI considers previous findings:
+
+```
+Ollama (basic issues)
+    ↓
+Claude (MML + semantic issues)
+    ↓
+Grok (edge cases + adversarial)
+    ↓
+Gemini (final synthesis + recommendation)
+```
+
+## Prompt Files Ready for Submission
+
+### Step 1: OLLAMA - FULLY READY
+File: .eiffel-workflow/prompts/phase2-ollama-review.md
+Status: ✓ READY TO SUBMIT (contracts fully pre-populated)
+Action: Copy entire file contents → paste to Ollama → save response to evidence/phase2-ollama-response.md
+
+### Step 2: CLAUDE - NEEDS OLLAMA
+File: .eiffel-workflow/prompts/phase2-claude-review.md
+Status: ⏳ WAITING FOR OLLAMA RESPONSE
+Prerequisites: phase2-ollama-response.md must be complete
+Action: Paste Ollama response into prompt → copy prompt → submit to Claude → save response
+
+### Step 3: GROK - NEEDS OLLAMA + CLAUDE
+File: .eiffel-workflow/prompts/phase2-grok-review.md
+Status: ⏳ WAITING FOR OLLAMA + CLAUDE RESPONSES
+Prerequisites: Both phase2-ollama-response.md and phase2-claude-response.md must be complete
+Action: Paste both responses into prompt → copy prompt → submit to Grok → save response
+
+### Step 4: GEMINI - NEEDS ALL THREE
+File: .eiffel-workflow/prompts/phase2-gemini-review.md
+Status: ⏳ WAITING FOR ALL THREE PREVIOUS RESPONSES
+Prerequisites: All of ollama/claude/grok responses must be complete
+Action: Paste all three responses into prompt → copy prompt → submit to Gemini → save response
+
+## Evidence Files
+
+Location: .eiffel-workflow/evidence/
+
+| File | Status | Purpose |
+|------|--------|---------|
+| phase2-ollama-response.md | ⏳ INCOMPLETE | Ollama's review findings |
+| phase2-claude-response.md | ⏳ INCOMPLETE | Claude's MML + semantic analysis |
+| phase2-grok-response.md | ⏳ INCOMPLETE | Grok's edge case + adversarial findings |
+| phase2-gemini-response.md | ⏳ INCOMPLETE | Gemini's final synthesis + recommendation |
+| phase2-chain.txt | ✓ CREATED | This file - tracking evidence |
+
+## Review Questions Answered
+
+### Ollama Must Answer
+- What obvious problems exist in these contracts?
+- Which preconditions are too weak?
+- Which postconditions don't constrain anything?
+- Are there any XOR invariant violations?
+
+### Claude Must Answer (given Ollama's findings)
+- Are contracts semantically correct?
+- Do MML model queries properly represent state?
+- Are frame conditions sufficient?
+- How should `old` expressions be used?
+
+### Grok Must Answer (given Ollama + Claude findings)
+- What edge cases might break these contracts?
+- What boundary conditions are untested?
+- Can we construct adversarial inputs?
+- What resource issues might occur?
+
+### Gemini Must Answer (given all three findings)
+- Are contracts ready for Phase 4 implementation?
+- What critical issues must be fixed?
+- What's the overall risk level?
+- Final recommendation: APPROVE / APPROVE WITH FIXES / REJECT?
+
+## Contract Content Submitted for Review
+
+### Classes Reviewed (14 total)
+1. SIMPLE_SCULPTOR - Main facade (10 features)
+2. SCULPTOR_ENGINE - ONNX integration
+3. SCULPTOR_RESULT - Success/failure result
+4. POINT_CLOUD - Sparse 3D points
+5. MESH_CONVERTER - Voxelization
+6. SCULPTOR_MESH - Solid geometry
+7. SCULPTOR_POINT_3D - 3D coordinate
+8. SCULPTOR_VECTOR_3D - 3D direction
+9. BOUNDING_BOX_3D - Spatial bounds
+10. TEXT_PROMPT - Input validation
+11. SCULPTOR_CONFIG - Builder pattern
+12. SCULPTOR_INFERENCE_RESULT - ONNX result
+13. MESH_VALIDATION_REPORT - Quality checks
+14. SCULPTOR_EXPORTER - Format conversion
+
+### Contracts Submitted (120+ total)
+- Preconditions: 35+
+- Postconditions: 50+
+- Class Invariants: 14
+- Total assertions: 99+
+
+## Implementation Approach Submitted
+
+See: .eiffel-workflow/approach.md
+
+Covers:
+- Layer 0-4 dependency graph
+- Algorithm sketches for key classes
+- Contract satisfaction strategy
+- Testing strategy
+- Known gaps
+
+## Next Steps After Reviews Complete
+
+1. **Gemini provides final verdict**:
+   - APPROVED → Go to Phase 3 (Task Decomposition)
+   - APPROVED WITH FIXES → Fix issues and resubmit
+   - REJECTED → Go back to Phase 1 redesign
+
+2. **Generate synopsis.md**:
+   - Synthesize all findings
+   - List approved contracts
+   - Document known limitations
+   - Outline required fixes (if any)
+
+3. **Human approval**:
+   - Review synopsis
+   - Approve proceeding to Phase 4
+   - OR request contract revisions
+
+4. **Proceed to Phase 3**:
+   - Break contracts into 14-20 implementation tasks
+   - Assign acceptance criteria from postconditions
+   - Begin parallel implementation in Phase 4
+
+## Manual Review Workflow
+
+**For User:**
+
+```
+1. Copy prompts/phase2-ollama-review.md → Ollama
+2. Get Ollama response → save to evidence/phase2-ollama-response.md
+3. Edit prompts/phase2-claude-review.md → paste Ollama response
+4. Copy edited prompt → Claude (new session)
+5. Get Claude response → save to evidence/phase2-claude-response.md
+6. Edit prompts/phase2-grok-review.md → paste Ollama + Claude responses
+7. Copy edited prompt → Grok
+8. Get Grok response → save to evidence/phase2-grok-response.md
+9. Edit prompts/phase2-gemini-review.md → paste all 3 responses
+10. Copy edited prompt → Gemini
+11. Get Gemini response → save to evidence/phase2-gemini-response.md
+12. Return to Claude Code, say "reviews complete"
+13. Claude will generate synopsis.md with all findings
+14. Review synopsis, approve or request fixes
+```
+
+## Timeline
+
+- **Phase 2 Start**: 2026-01-31
+- **Ollama submission**: User's timeline
+- **Claude submission**: After Ollama
+- **Grok submission**: After Claude
+- **Gemini submission**: After Grok
+- **Synthesis**: Upon all reviews complete
+- **Phase 2 Complete**: Upon human approval of synopsis
+
+## Completion Criteria
+
+✓ Phase 2 COMPLETE when:
+1. All 4 AI reviews submitted
+2. phase2-gemini-response.md contains Gemini's final verdict
+3. Gemini recommends APPROVED or APPROVED WITH FIXES
+4. User explicitly approves proceeding to Phase 3
+5. .eiffel-workflow/synopsis.md generated with all findings
+
+## Known Issues to Watch For
+
+(These were identified during approach generation - see if AIs find them)
+
+1. **Edge Cases**:
+   - NaN/Inf coordinates not validated
+   - Empty error messages may violate XOR invariant
+   - Face indices may reference non-existent vertices
+
+2. **Frame Conditions**:
+   - Config setters don't specify what unchanged
+   - Model loading has no error handling
+
+3. **MML Gaps**:
+   - POINT_CLOUD lacks model queries for frame conditions
+   - SCULPTOR_MESH lacks topology validation model
+
+---
+
+**Status: INITIATED - Awaiting user submission to Ollama**
+
+When you've completed all 4 reviews, return here and say "reviews complete" to proceed to Phase 2 synthesis.

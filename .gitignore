@@ -1,0 +1,33 @@
+# EiffelStudio build artifacts
+EIFGENs/
+*.melted
+*.exe
+*.dll
+*.lib
+
+# Operating system
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+*.tmp
+*.bak
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build output
+bin/
+obj/
+
+# OS
+*.log

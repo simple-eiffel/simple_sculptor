@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - Architecture</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Architecture and Design</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#overview">Overview</a></li>
+            <li><a href="#pipeline">Pipeline</a></li>
+            <li><a href="#layers">Layers</a></li>
+            <li><a href="#patterns">Patterns</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="overview">
+            <h2>Architecture Overview</h2>
+            <p>
+                simple_sculptor uses a <strong>layered facade architecture</strong> with Design by Contract throughout.
+                The library is organized into 5 dependency layers, from low-level utilities to high-level API.
+            </p>
+        </section>
+
+        <section id="pipeline">
+            <h2>Generation Pipeline</h2>
+            <pre><code>User Text Prompt
+    ↓
+[SIMPLE_SCULPTOR Facade]
+    ↓
+[SCULPTOR_ENGINE] - ONNX Inference
+    ↓
+[POINT_CLOUD] - 3D Point Representation
+    ↓
+[MESH_CONVERTER] - Voxel Grid Discretization
+    ↓
+[SCULPTOR_MESH] - Solid Geometry
+    ↓
+[SCULPTOR_RESULT] - Success/Error (XOR)</code></pre>
+
+            <h3>Pipeline Steps</h3>
+            <ol>
+                <li><strong>Input:</strong> Text prompt describing desired 3D object</li>
+                <li><strong>Inference:</strong> Point-E ONNX model generates point cloud</li>
+                <li><strong>Discretization:</strong> Points mapped to voxel grid</li>
+                <li><strong>Meshing:</strong> Voxels converted to triangular mesh</li>
+                <li><strong>Result:</strong> Mesh returned with success/error XOR pattern</li>
+            </ol>
+        </section>
+
+        <section id="layers">
+            <h2>Layered Architecture</h2>
+
+            <h3>Layer 0: Utility Classes</h3>
+            <p><strong>No dependencies</strong> (can be used standalone)</p>
+            <ul>
+                <li><code>SCULPTOR_POINT_3D</code> - 3D coordinate (x, y, z)</li>
+                <li><code>SCULPTOR_VECTOR_3D</code> - 3D direction with magnitude</li>
+                <li><code>TEXT_PROMPT</code> - Text input wrapper</li>
+                <li><code>BOUNDING_BOX_3D</code> - Axis-aligned 3D bounds</li>
+            </ul>
+
+            <h3>Layer 1: Data Structures</h3>
+            <p><strong>Depends on Layer 0</strong></p>
+            <ul>
+                <li><code>POINT_CLOUD</code> - Sparse 3D point set</li>
+                <li><code>MESH_VALIDATION_REPORT</code> - Validation results</li>
+                <li><code>SCULPTOR_CONFIG</code> - Configuration builder</li>
+            </ul>
+
+            <h3>Layer 2: Core Logic</h3>
+            <p><strong>Depends on Layers 0-1</strong></p>
+            <ul>
+                <li><code>SCULPTOR_RESULT</code> - Success/error result (XOR pattern)</li>
+                <li><code>SCULPTOR_INFERENCE_RESULT</code> - ONNX output result</li>
+                <li><code>MESH_CONVERTER</code> - Point cloud → mesh conversion</li>
+            </ul>
+
+            <h3>Layer 3: System Integration</h3>
+            <p><strong>Depends on Layers 0-2</strong></p>
+            <ul>
+                <li><code>SCULPTOR_EXPORTER</code> - Multi-format export interface</li>
+                <li><code>SCULPTOR_MESH</code> - Solid geometry with validation</li>
+                <li><code>SCULPTOR_ENGINE</code> - ONNX inference engine</li>
+            </ul>
+
+            <h3>Layer 4: Public API Facade</h3>
+            <p><strong>Depends on all layers</strong></p>
+            <ul>
+                <li><code>SIMPLE_SCULPTOR</code> - Main entry point</li>
+            </ul>
+
+            <h3>Layer 5: Testing (Not part of library)</h3>
+            <p>47 test methods covering all classes and postconditions</p>
+        </section>
+
+        <section id="design-patterns">
+            <h2>Design Patterns</h2>
+
+            <h3>Facade Pattern</h3>
+            <p>
+                <code>SIMPLE_SCULPTOR</code> provides a single entry point, hiding complexity of underlying layers.
+                Users interact only with the facade.
+            </p>
+
+            <h3>Builder Pattern</h3>
+            <p>
+                Configuration methods return <code>like Current</code> for method chaining:
+            </p>
+            <pre><code>l_sculptor.set_device ("CUDA")
+    .set_voxel_size (0.5)
+    .set_seed (42)
+    .set_num_inference_steps (64)</code></pre>
+
+            <h3>XOR Result Pattern</h3>
+            <p>
+                Results use invariant: <code>is_success XOR error_message.is_empty</code>
+                Ensures success and error are mutually exclusive.
+            </p>
+
+            <h3>Frame Conditions</h3>
+            <p>
+                Postconditions specify what <strong>does not change</strong> during operations:
+            </p>
+            <pre><code>set_device (a_device: STRING): like Current
+ensure
+    device_changed: engine.device.is_equal (a_device)
+    -- Frame conditions - what did NOT change:
+    voxel_size_unchanged: config.voxel_size = old config.voxel_size
+    seed_unchanged: config.seed = old config.seed
+    steps_unchanged: config.num_inference_steps = old config.num_inference_steps
+end</code></pre>
+
+            <h3>Model Queries (MML)</h3>
+            <p>
+                Collections provide mathematical model queries for precise postcondition verification:
+            </p>
+            <pre><code>feature
+    points_model: ARRAY [REAL_32]
+            -- Mathematical model of points (for postcondition verification)
+        do
+            -- Returns copy of internal array for verification
+        end</code></pre>
+        </section>
+
+        <section id="design-by-contract">
+            <h2>Design by Contract</h2>
+
+            <h3>Preconditions (require)</h3>
+            <p>Caller obligations - what must be true before calling:</p>
+            <ul>
+                <li>Device must be valid: "CPU", "CUDA", or "TensorRT"</li>
+                <li>Voxel size must be 0.1 to 1.0</li>
+                <li>Inference steps must be 16 to 256</li>
+                <li>Error messages cannot be empty</li>
+            </ul>
+
+            <h3>Postconditions (ensure)</h3>
+            <p>Supplier obligations - what is guaranteed after call:</p>
+            <ul>
+                <li>Result is Current (for builder methods)</li>
+                <li>Configuration values are set as requested</li>
+                <li>Frame conditions hold (other state unchanged)</li>
+                <li>Success/error XOR invariant maintained</li>
+            </ul>
+
+            <h3>Invariants (invariant)</h3>
+            <p>Class-level guarantees maintained at all stable points:</p>
+            <ul>
+                <li>Success XOR error message (never both, never neither)</li>
+                <li>Coordinates finite (no NaN or infinity)</li>
+                <li>Bounding box bounds consistent (min ≤ max)</li>
+                <li>Configuration ranges valid</li>
+            </ul>
+
+            <h3>Contract Statistics</h3>
+            <ul>
+                <li>14 classes with full contract coverage</li>
+                <li>100+ preconditions enforcing valid inputs</li>
+                <li>100+ postconditions verifying correct outputs</li>
+                <li>50+ invariants maintaining class consistency</li>
+                <li>10+ MML model queries for verification</li>
+                <li>180+ acceptance criteria (1 per postcondition)</li>
+            </ul>
+        </section>
+
+        <section id="void-safety">
+            <h2>Void Safety</h2>
+
+            <p>All code is void-safe (void_safety="all"):</p>
+            <ul>
+                <li>Detachable attributes checked with <code>attached</code> clause</li>
+                <li>No Void pointer dereferencing</li>
+                <li>All creation procedures initialize required attributes</li>
+                <li>Defensive copies for string arguments (using <code>.twin</code>)</li>
+            </ul>
+
+            <h3>Detachable vs Attached</h3>
+            <pre><code>-- Detachable (may be Void) - on error path
+error_message: STRING
+
+-- Attached (never Void) - on success path
+mesh: detachable SCULPTOR_MESH  -- Valid if is_success = True</code></pre>
+        </section>
+
+        <section id="scoop">
+            <h2>SCOOP Compatibility</h2>
+
+            <p>
+                Library is SCOOP-compatible (concurrency support enabled).
+                No shared mutable state between concurrent accesses.
+            </p>
+
+            <ul>
+                <li>Each SIMPLE_SCULPTOR instance independent</li>
+                <li>Can create multiple instances for concurrent generation</li>
+                <li>No global state or shared caches</li>
+            </ul>
+        </section>
+
+        <section id="performance">
+            <h2>Performance Characteristics</h2>
+
+            <h3>Inference Time</h3>
+            <table>
+                <tr>
+                    <th>Device</th>
+                    <th>Estimated Time</th>
+                    <th>Use Case</th>
+                </tr>
+                <tr>
+                    <td>CPU</td>
+                    <td>~60 seconds</td>
+                    <td>Development, testing</td>
+                </tr>
+                <tr>
+                    <td>CUDA</td>
+                    <td>~15 seconds</td>
+                    <td>Production GPU</td>
+                </tr>
+                <tr>
+                    <td>TensorRT</td>
+                    <td>~10 seconds</td>
+                    <td>Optimized production</td>
+                </tr>
+            </table>
+
+            <h3>Voxel Size Impact</h3>
+            <table>
+                <tr>
+                    <th>Voxel Size</th>
+                    <th>Detail Level</th>
+                    <th>Mesh Complexity</th>
+                </tr>
+                <tr>
+                    <td>0.1</td>
+                    <td>Very High</td>
+                    <td>8x vertices per point</td>
+                </tr>
+                <tr>
+                    <td>0.5</td>
+                    <td>Medium (Default)</td>
+                    <td>8x vertices per point</td>
+                </tr>
+                <tr>
+                    <td>1.0</td>
+                    <td>Coarse</td>
+                    <td>8x vertices per point</td>
+                </tr>
+            </table>
+
+            <h3>Memory Usage</h3>
+            <ul>
+                <li>Point cloud: 12 bytes per point (3 × REAL_32)</li>
+                <li>Mesh: 12 bytes per vertex + 4 bytes per face index</li>
+                <li>Model: Varies by ONNX model (typically 500MB-2GB)</li>
+            </ul>
+        </section>
+
+        <footer>
+            <p><a href="index.html">← Back to Home</a></p>
+        </footer>
+    </main>
+</body>
+</html>

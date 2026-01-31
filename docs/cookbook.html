@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - Examples & Cookbook</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Examples & Recipes</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#basic">Basic</a></li>
+            <li><a href="#batch">Batch</a></li>
+            <li><a href="#advanced">Advanced</a></li>
+            <li><a href="#tips">Tips</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="basic">
+            <h2>Basic Examples</h2>
+
+            <h3>Simple Generation</h3>
+            <p>Generate a single 3D object from a text prompt:</p>
+            <pre><code>local
+    l_sculptor: SIMPLE_SCULPTOR
+    l_result: SCULPTOR_RESULT
+do
+    create l_sculptor.make
+    l_sculptor.set_device ("CPU")
+    l_sculptor.set_model_path ("models/point-e.onnx")
+    l_sculptor.load_model
+
+    l_result := l_sculptor.generate ("a wooden table")
+
+    if l_result.is_success and attached l_result.mesh as mesh then
+        print ("Generated: " + mesh.vertex_count.out + " vertices")
+    else
+        print ("Error: " + l_result.error_message)
+    end
+
+    l_sculptor.unload_model
+end</code></pre>
+
+            <h3>Configuration Chaining</h3>
+            <p>Configure multiple parameters using fluent API:</p>
+            <pre><code>l_sculptor.set_device ("CUDA")
+    .set_voxel_size (0.3)      -- Higher detail
+    .set_seed (12345)           -- Reproducible
+    .set_num_inference_steps (128)  -- Better quality</code></pre>
+
+            <h3>Check Device Capabilities</h3>
+            <pre><code>l_sculptor.set_device ("CUDA")
+l_sculptor.set_model_path ("model.onnx")
+l_sculptor.load_model
+
+print ("Estimated time: " + l_sculptor.estimated_inference_time.out)</code></pre>
+        </section>
+
+        <section id="batch">
+            <h2>Batch Processing</h2>
+
+            <h3>Generate Multiple Objects</h3>
+            <pre><code>local
+    l_sculptor: SIMPLE_SCULPTOR
+    l_prompts: LIST [STRING]
+    l_results: LIST [SCULPTOR_RESULT]
+do
+    create l_sculptor.make
+    l_sculptor.set_device ("CUDA")
+    l_sculptor.set_model_path ("model.onnx")
+    l_sculptor.load_model
+
+    create {ARRAYED_LIST [STRING]} l_prompts.make (5)
+    l_prompts.extend ("red cube")
+    l_prompts.extend ("blue sphere")
+    l_prompts.extend ("green pyramid")
+    l_prompts.extend ("yellow cylinder")
+    l_prompts.extend ("orange cone")
+
+    l_results := l_sculptor.batch_generate (l_prompts)
+
+    across l_results as r loop
+        if r.item.is_success then
+            print ("Generated: " + r.item.mesh.vertex_count.out + " vertices")
+        else
+            print ("Failed: " + r.item.error_message)
+        end
+    end
+
+    l_sculptor.unload_model
+end</code></pre>
+
+            <h3>Parallel Processing</h3>
+            <p>Since SIMPLE_SCULPTOR is SCOOP-compatible, create multiple instances:</p>
+            <pre><code>local
+    l_sculptors: ARRAY [SIMPLE_SCULPTOR]
+    l_idx: INTEGER
+do
+    create l_sculptors.make_filled (create {SIMPLE_SCULPTOR}.make, 1, 4)
+
+    across l_sculptors as sculptor loop
+        sculptor.item.set_device ("CUDA")
+        sculptor.item.set_model_path ("model.onnx")
+        sculptor.item.load_model
+    end
+
+    -- Now process independently in parallel
+    across l_sculptors as sculptor loop
+        -- Can use in separate threads/SCOOP
+    end
+end</code></pre>
+        </section>
+
+        <section id="advanced">
+            <h2>Advanced Recipes</h2>
+
+            <h3>Custom Mesh Validation</h3>
+            <pre><code>local
+    l_result: SCULPTOR_RESULT
+    l_report: MESH_VALIDATION_REPORT
+do
+    l_result := l_sculptor.generate (prompt)
+
+    if l_result.is_success and attached l_result.mesh as mesh then
+        l_report := mesh.validate
+
+        if l_report.is_valid then
+            print ("Mesh is valid")
+        else
+            across l_report.error_messages as msg loop
+                print ("Error: " + msg.item)
+            end
+        end
+    end
+end</code></pre>
+
+            <h3>Working with Point Clouds</h3>
+            <p>Process intermediate point clouds directly:</p>
+            <pre><code>local
+    l_engine: SCULPTOR_ENGINE
+    l_inference_result: SCULPTOR_INFERENCE_RESULT
+    l_converter: MESH_CONVERTER
+    l_mesh: SCULPTOR_MESH
+do
+    create l_engine.make
+    l_engine.set_device ("CUDA")
+    l_engine.set_model_path ("model.onnx")
+    l_engine.load_model
+
+    l_inference_result := l_engine.execute ("prompt", 42)
+
+    if l_inference_result.is_success and attached l_inference_result.points as cloud then
+        -- Inspect point cloud
+        print ("Points: " + cloud.point_count.out)
+        print ("Bounds: " + cloud.bounding_box.volume.out)
+
+        -- Convert with custom voxel size
+        create l_converter.make (0.1)  -- Fine detail
+        l_mesh := l_converter.convert (cloud)
+
+        -- Or with smoothing
+        l_mesh := l_converter.convert_with_smoothing (cloud, 5)
+    end
+end</code></pre>
+
+            <h3>Export to Different Formats</h3>
+            <pre><code>local
+    l_exporter: SCULPTOR_EXPORTER
+    l_result: SCULPTOR_RESULT
+do
+    create l_exporter.make
+
+    -- Export as GLB (glTF binary)
+    l_result := l_exporter.export_to_glb (mesh, "output.glb")
+
+    -- Export as OBJ (Wavefront)
+    l_result := l_exporter.export_to_obj (mesh, "output.obj")
+
+    -- Export as STL (3D printing)
+    l_result := l_exporter.export_to_stl (mesh, "output.stl")
+
+    if not l_result.is_success then
+        print ("Export failed: " + l_result.error_message)
+    end
+end</code></pre>
+
+            <h3>Reproducible Generation</h3>
+            <p>Use fixed seed for reproducible results:</p>
+            <pre><code>l_sculptor.set_seed (12345)  -- Always generates same output for same prompt
+
+result1 := l_sculptor.generate ("a cube")
+result2 := l_sculptor.generate ("a cube")
+
+-- result1 and result2 are identical</code></pre>
+
+            <h3>Geometry Utilities</h3>
+            <pre><code>local
+    l_point1, l_point2: SCULPTOR_POINT_3D
+    l_vector: SCULPTOR_VECTOR_3D
+    l_distance: REAL_32
+    l_bbox: BOUNDING_BOX_3D
+do
+    -- Create points
+    create l_point1.make (0.0, 0.0, 0.0)
+    create l_point2.make (1.0, 1.0, 1.0)
+
+    -- Calculate distance
+    l_distance := l_point1.distance_to (l_point2)
+
+    -- Create vector between points
+    create l_vector.make_from_points (l_point1, l_point2)
+    print ("Magnitude: " + l_vector.magnitude.out)
+
+    -- Scale vector
+    l_vector.scale (2.0)
+    l_vector.normalize
+
+    -- Create bounding box
+    create l_bbox.make (-1.0, -1.0, -1.0, 1.0, 1.0, 1.0)
+    print ("Contains origin: " + l_bbox.contains_point (l_point1).out)
+    print ("Center: " + l_bbox.center.x.out)
+end</code></pre>
+        </section>
+
+        <section id="tips">
+            <h2>Tips and Best Practices</h2>
+
+            <h3>Performance Tips</h3>
+            <ul>
+                <li><strong>Use TensorRT for best speed:</strong> ~10s vs 60s on CPU</li>
+                <li><strong>Batch multiple prompts:</strong> Load model once, reuse</li>
+                <li><strong>Adjust voxel size:</strong> Larger (0.8-1.0) for speed, smaller (0.1-0.3) for detail</li>
+                <li><strong>Reduce steps for speed:</strong> Use 16-32 steps instead of 128-256</li>
+            </ul>
+
+            <h3>Quality Tips</h3>
+            <ul>
+                <li><strong>Use higher step count:</strong> 128+ steps for better quality</li>
+                <li><strong>Use smaller voxel size:</strong> 0.1-0.3 for fine detail</li>
+                <li><strong>Apply smoothing:</strong> convert_with_smoothing(cloud, 5)</li>
+                <li><strong>Use descriptive prompts:</strong> "a wooden chair with armrests" vs "chair"</li>
+            </ul>
+
+            <h3>Error Handling Pattern</h3>
+            <pre><code>result := l_sculptor.generate (prompt)
+
+-- Always check success BEFORE accessing mesh
+if result.is_success then
+    -- mesh is guaranteed valid
+    mesh := result.mesh
+    -- Use mesh safely
+else
+    -- error_message is guaranteed non-empty
+    error := result.error_message
+    -- Handle error
+end</code></pre>
+
+            <h3>Resource Management</h3>
+            <ul>
+                <li><strong>Load model once:</strong> Reuse for multiple generations</li>
+                <li><strong>Unload when done:</strong> Frees VRAM for other tasks</li>
+                <li><strong>Use try/ensure:</strong> Guarantee unload in exception cases</li>
+            </ul>
+
+            <h3>Testing Your Code</h3>
+            <pre><code>local
+    l_sculptor: SIMPLE_SCULPTOR
+    l_result: SCULPTOR_RESULT
+do
+    create l_sculptor.make
+    l_sculptor.set_device ("CPU")  -- CPU for testing, no GPU required
+    l_sculptor.set_model_path ("model.onnx")
+
+    if l_sculptor.engine.model_path /= Void then
+        l_sculptor.load_model
+
+        l_result := l_sculptor.generate ("test cube")
+        assert (l_result /= Void, "Result not void")
+        assert (l_result.is_success, "Generation succeeded")
+
+        l_sculptor.unload_model
+    else
+        print ("Model file not found - skipping test")
+    end
+end</code></pre>
+        </section>
+
+        <footer>
+            <p>See <a href="user-guide.html">User Guide</a> for detailed patterns.</p>
+            <p><a href="index.html">← Back to Home</a></p>
+        </footer>
+    </main>
+</body>
+</html>

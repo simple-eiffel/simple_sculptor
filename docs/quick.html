@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>simple_sculptor - Quick API Reference</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header>
+        <h1>simple_sculptor</h1>
+        <p class="tagline">Quick API Reference</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="#facades">Facades</a></li>
+            <li><a href="#data-types">Data Types</a></li>
+            <li><a href="#results">Results</a></li>
+            <li><a href="user-guide.html">Full Guide</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="facades">
+            <h2>Facade Classes</h2>
+
+            <h3>SIMPLE_SCULPTOR (Main API)</h3>
+            <pre><code>create l_sculptor.make
+l_sculptor.set_device ("CPU" | "CUDA" | "TensorRT"): like Current
+l_sculptor.set_voxel_size (0.1..1.0): like Current
+l_sculptor.set_seed (INTEGER): like Current
+l_sculptor.set_num_inference_steps (16..256): like Current
+l_sculptor.load_model
+l_sculptor.unload_model
+result := l_sculptor.generate ("text prompt"): SCULPTOR_RESULT
+results := l_sculptor.batch_generate (list_of_prompts): LIST [SCULPTOR_RESULT]
+time := l_sculptor.estimated_inference_time: REAL</code></pre>
+
+            <h3>SCULPTOR_ENGINE (ONNX Inference)</h3>
+            <pre><code>create l_engine.make
+l_engine.set_model_path ("path/to/model.onnx")
+l_engine.set_device ("CPU" | "CUDA" | "TensorRT")
+l_engine.load_model
+l_engine.unload_model
+result := l_engine.execute ("text", seed): SCULPTOR_INFERENCE_RESULT</code></pre>
+        </section>
+
+        <section id="data-types">
+            <h2>Data Types</h2>
+
+            <h3>POINT_CLOUD</h3>
+            <pre><code>create l_cloud.make (array_of_xyz_triplets: ARRAY [REAL_32])
+count := l_cloud.point_count: INTEGER
+point := l_cloud.get_point (0_based_index): SCULPTOR_POINT_3D
+bbox := l_cloud.bounding_box: BOUNDING_BOX_3D
+is_empty := l_cloud.is_empty: BOOLEAN</code></pre>
+
+            <h3>SCULPTOR_MESH</h3>
+            <pre><code>create l_mesh.make (vertices: ARRAY [REAL_32], faces: ARRAY [INTEGER])
+create l_mesh.make_empty
+vertex_count := l_mesh.vertex_count: INTEGER
+face_count := l_mesh.face_count: INTEGER
+bbox := l_mesh.bounding_box: BOUNDING_BOX_3D
+report := l_mesh.validate: MESH_VALIDATION_REPORT</code></pre>
+
+            <h3>SCULPTOR_CONFIG</h3>
+            <pre><code>create l_config.make
+l_config.set_voxel_size (0.1..1.0): like Current
+l_config.set_seed (INTEGER): like Current
+l_config.set_num_inference_steps (16..256): like Current</code></pre>
+        </section>
+
+        <section id="results">
+            <h2>Result Types</h2>
+
+            <h3>SCULPTOR_RESULT (XOR Pattern)</h3>
+            <pre><code>if l_result.is_success then
+    mesh := l_result.mesh
+    -- Process 3D mesh
+else
+    error := l_result.error_message
+    -- Handle error
+end</code></pre>
+
+            <h3>SCULPTOR_INFERENCE_RESULT</h3>
+            <pre><code>if l_result.is_success then
+    points := l_result.points  -- POINT_CLOUD
+else
+    error := l_result.error_message
+end</code></pre>
+
+            <h3>MESH_VALIDATION_REPORT</h3>
+            <pre><code>if l_report.is_valid then
+    -- Mesh topology is valid
+else
+    errors := l_report.error_messages  -- LIST [STRING]
+    count := l_report.error_count
+end</code></pre>
+        </section>
+
+        <section id="geometry">
+            <h2>Geometry Types</h2>
+
+            <h3>SCULPTOR_POINT_3D</h3>
+            <pre><code>create l_point.make (x, y, z: REAL_32)
+create l_point.make_from_array ([x, y, z])
+distance := l_point.distance_to (other): REAL_32
+array := l_point.to_array: ARRAY [REAL_32]</code></pre>
+
+            <h3>SCULPTOR_VECTOR_3D</h3>
+            <pre><code>create l_vec.make (x, y, z: REAL_32)
+create l_vec.make_zero
+create l_vec.make_from_points (start, end: SCULPTOR_POINT_3D)
+magnitude := l_vec.magnitude: REAL_32
+dot := l_vec.dot_product (other): REAL_32
+l_vec.scale (factor: REAL_32)
+l_vec.normalize</code></pre>
+
+            <h3>BOUNDING_BOX_3D</h3>
+            <pre><code>create l_bbox.make (min_x, min_y, min_z, max_x, max_y, max_z: REAL_32)
+width := l_bbox.width: REAL_32
+height := l_bbox.height: REAL_32
+depth := l_bbox.depth: REAL_32
+volume := l_bbox.volume: REAL_32
+center := l_bbox.center: SCULPTOR_POINT_3D
+contains := l_bbox.contains_point (point): BOOLEAN</code></pre>
+        </section>
+
+        <section id="converter">
+            <h2>Conversion</h2>
+
+            <h3>MESH_CONVERTER</h3>
+            <pre><code>create l_converter.make (voxel_size: 0.1..1.0)
+mesh := l_converter.convert (cloud: POINT_CLOUD): SCULPTOR_MESH
+mesh := l_converter.convert_with_smoothing
+    (cloud: POINT_CLOUD; iterations: 0..10): SCULPTOR_MESH</code></pre>
+
+            <h3>SCULPTOR_EXPORTER</h3>
+            <pre><code>create l_exporter.make
+result := l_exporter.export_to_glb (mesh, path): SCULPTOR_RESULT
+result := l_exporter.export_to_obj (mesh, path): SCULPTOR_RESULT
+result := l_exporter.export_to_stl (mesh, path): SCULPTOR_RESULT</code></pre>
+        </section>
+
+        <section id="patterns">
+            <h2>Common Patterns</h2>
+
+            <h3>Builder Pattern</h3>
+            <pre><code>l_sculptor.set_device ("CPU")
+    .set_voxel_size (0.5)
+    .set_seed (42)
+    .set_num_inference_steps (64)</code></pre>
+
+            <h3>Error Handling (XOR Result)</h3>
+            <pre><code>result := l_sculptor.generate ("cube")
+if result.is_success and attached result.mesh as m then
+    -- Process m
+else if attached result.error_message as err then
+    print (err)
+end</code></pre>
+
+            <h3>Batch Processing</h3>
+            <pre><code>prompts := ["red cube", "blue sphere", "green pyramid"]
+results := l_sculptor.batch_generate (prompts)
+across results as r loop
+    if r.item.is_success then
+        process (r.item.mesh)
+    end
+end</code></pre>
+        </section>
+
+        <footer>
+            <p>See <a href="user-guide.html">User Guide</a> for detailed examples and patterns.</p>
+            <p><a href="index.html">← Back to Home</a></p>
+        </footer>
+    </main>
+</body>
+</html>
