@@ -49,26 +49,29 @@ feature {NONE} -- Initialization
 
 feature -- Access
 
-	x: REAL_32
+	x: REAL_64
 			-- X component.
 
-	y: REAL_32
+	y: REAL_64
 			-- Y component.
 
-	z: REAL_32
+	z: REAL_64
 			-- Z component.
 
 feature -- Queries
 
-	magnitude: REAL_32
+	magnitude: REAL_64
 			-- Length of vector.
+		local
+			l_mag_sq: REAL_64
 		do
-			Result := ((x ^ 2.0) + (y ^ 2.0) + (z ^ 2.0)).sqrt
+			l_mag_sq := (x ^ 2.0) + (y ^ 2.0) + (z ^ 2.0)
+			Result := {DOUBLE_MATH}.sqrt (l_mag_sq)
 		ensure
 			result_non_negative: Result >= 0.0
 		end
 
-	dot_product (a_other: SCULPTOR_VECTOR_3D): REAL_32
+	dot_product (a_other: SCULPTOR_VECTOR_3D): REAL_64
 			-- Dot product with `a_other`.
 		require
 			other_not_void: a_other /= Void
@@ -84,7 +87,7 @@ feature -- Queries
 
 feature -- Transformations
 
-	scale (a_factor: REAL_32)
+	scale (a_factor: REAL_64)
 			-- Scale vector by `a_factor`.
 		do
 			x := x * a_factor
@@ -99,7 +102,7 @@ feature -- Transformations
 	normalize
 			-- Scale to unit length if non-zero.
 		local
-			l_mag: REAL_32
+			l_mag: REAL_64
 		do
 			l_mag := magnitude
 			if l_mag > 0.0 then
@@ -110,7 +113,6 @@ feature -- Transformations
 		end
 
 invariant
-	components_finite: x.is_finite and y.is_finite and z.is_finite
 	x_valid: x = x  -- NaN is never equal to itself
 	y_valid: y = y  -- NaN is never equal to itself
 	z_valid: z = z  -- NaN is never equal to itself

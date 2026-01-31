@@ -13,6 +13,7 @@
 		<setting name="total_order_on_reals" value="true"/>
 		<!-- Required Libraries (simple_* first policy) -->
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
+		<library name="simple_math" location="$SIMPLE_EIFFEL/simple_math/simple_math.ecf"/>
 		<library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/>
 		<!-- Source Files -->
 		<cluster name="src" location="src/" recursive="true"/>

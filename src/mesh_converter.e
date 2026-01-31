@@ -33,12 +33,12 @@ feature -- Conversion
 			points_not_void: a_points /= Void
 			points_not_empty: not a_points.is_empty
 		local
-			l_vertices: ARRAYED_LIST [REAL_32]
+			l_vertices: ARRAYED_LIST [REAL_64]
 			l_faces: ARRAYED_LIST [INTEGER]
 			l_idx, l_v_idx: INTEGER
-			l_x, l_y, l_z: REAL_32
-			l_offset: REAL_32
-			l_vertices_array: ARRAY [REAL_32]
+			l_x, l_y, l_z: REAL_64
+			l_offset: REAL_64
+			l_vertices_array: ARRAY [REAL_64]
 			l_faces_array: ARRAY [INTEGER]
 		do
 			l_offset := voxel_size / 2.0

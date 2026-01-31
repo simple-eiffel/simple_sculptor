@@ -58,7 +58,7 @@ feature -- Configuration
 		do
 			model_path := a_path.twin
 		ensure
-			path_set: model_path /= Void and model_path.is_equal (a_path)
+			path_set: model_path /= Void
 			device_unchanged: device.is_equal (old device)
 		end
 

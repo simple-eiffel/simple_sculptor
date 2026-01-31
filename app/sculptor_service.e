@@ -41,22 +41,37 @@ feature -- Generation
 			sculptor.set_device (a_device)
 						.set_num_inference_steps (a_steps)
 						.set_voxel_size (a_voxel_size)
+						.do_nothing
 
 			-- Generate model
 			l_result := sculptor.generate (a_prompt)
 
 			if l_result.is_success then
 				-- Export to GLB
-				model_count := model_count + 1
-				l_model_path := generate_model_path
-				if export_mesh (l_result.mesh, l_model_path) then
-					Result := [True, l_model_path, Void]
+				if attached l_result.mesh as l_mesh then
+					model_count := model_count + 1
+					l_model_path := generate_model_path
+					if export_mesh (l_mesh, l_model_path) then
+						Result := [True, l_model_path, Void]
+					else
+						Result := [False, Void, "Failed to export model"]
+					end
 				else
-					Result := [False, Void, "Failed to export model"]
+					Result := [False, Void, "No mesh generated"]
 				end
 			else
 				Result := [False, Void, l_result.error_message]
 			end
+		end
+
+feature -- Device Validation
+
+	is_valid_device (a_device: STRING): BOOLEAN
+			-- Is device valid?
+		do
+			Result := a_device.is_equal ("CPU") or
+					  a_device.is_equal ("CUDA") or
+					  a_device.is_equal ("TensorRT")
 		end
 
 feature {NONE} -- Implementation
@@ -66,14 +81,6 @@ feature {NONE} -- Implementation
 
 	model_count: INTEGER
 			-- Number of models generated in this session.
-
-	is_valid_device (a_device: STRING): BOOLEAN
-			-- Is device valid?
-		do
-			Result := a_device.is_equal ("CPU") or
-					  a_device.is_equal ("CUDA") or
-					  a_device.is_equal ("TensorRT")
-		end
 
 	generate_model_path: STRING
 			-- Generate path for next model file.

@@ -38,10 +38,17 @@ feature -- Model Queries
 
 	points_model: ARRAY [REAL_32]
 			-- Mathematical model of points (for postcondition verification).
+		local
+			l_idx: INTEGER
 		do
 			create Result.make_filled (0.0, 1, points.count)
-			across points as ic loop
-				Result [ic.index] := ic.item
+			from
+				l_idx := points.lower
+			until
+				l_idx > points.upper
+			loop
+				Result [l_idx] := points [l_idx]
+				l_idx := l_idx + 1
 			end
 		ensure
 			result_not_void: Result /= Void
