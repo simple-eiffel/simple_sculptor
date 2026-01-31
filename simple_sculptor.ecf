@@ -23,4 +23,12 @@
 		<library name="eqa_testing" location="$ISE_LIBRARY/library/testing/testing.ecf"/>
 		<cluster name="testing" location="testing/" recursive="true"/>
 	</target>
+	<target name="sculptor_viewer" extends="simple_sculptor">
+		<root class="SCULPTOR_VIEWER_APP" feature="make"/>
+		<option warning="error"/>
+		<library name="simple_browser" location="$SIMPLE_EIFFEL/simple_browser/simple_browser.ecf"/>
+		<library name="simple_vision" location="$SIMPLE_EIFFEL/simple_vision/simple_vision.ecf"/>
+		<library name="simple_json" location="$SIMPLE_EIFFEL/simple_json/simple_json.ecf"/>
+		<cluster name="app" location="app/" recursive="true"/>
+	</target>
 </system>
