@@ -10,6 +10,7 @@
 			<concurrency support="scoop"/>
 			<void_safety support="all"/>
 		</capability>
+		<setting name="total_order_on_reals" value="true"/>
 		<!-- Required Libraries (simple_* first policy) -->
 		<library name="base" location="$ISE_LIBRARY/library/base/base.ecf"/>
 		<library name="simple_onnx" location="$SIMPLE_EIFFEL/simple_onnx/simple_onnx.ecf"/>
